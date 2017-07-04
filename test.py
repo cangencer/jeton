@@ -1,9 +1,17 @@
-from jeton import Pipe, Jeton
+from jeton import Jeton
 
 jeton = Jeton()
 
-p = jeton.new_pipe()
+map = jeton.get_map("words")
+map.put(0, "0 1 1 2 2 3 3 4 4 5 5 6")
 
-p.map(lambda x: x + 1)
+pipe = jeton.new_pipe()
 
-jeton.execute_pipe(p)
+pipe\
+    .read_map("words")\
+    .flat_map(lambda e: iter(e.value().split()))\
+    .map(lambda n: (n, 1))\
+    .reduce(lambda a, n: a + 1, lambda l, r: l + r)\
+    .write_map("counts")\
+    .execute()
+
