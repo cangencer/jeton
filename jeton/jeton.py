@@ -25,7 +25,7 @@ class Entry(object):
         self.key = key
         self.value = value
 
-    def __str__(self):
+    def __repr__(self):
         return "Entry(key=%s, value=%s)" % (self.key, self.value)
 
 

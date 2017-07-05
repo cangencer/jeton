@@ -3,10 +3,10 @@ from jeton import Entry
 
 class Processor(object):
     def process(self, inbox, ordinal=0):
-        yield
+        return iter(())
 
     def complete(self):
-        yield
+        return iter(())
 
 
 class TestP(Processor):
@@ -27,9 +27,6 @@ class MapP(Processor):
     def process(self, inbox, ordinal=0):
         for item in inbox:
             yield self.map_function(item)
-
-    def complete(self):
-        yield
 
 
 class FlatMapP(Processor):
@@ -62,6 +59,7 @@ class AccumulateP(Processor):
     def process(self, inbox, ordinal=0):
         for entry in inbox:
             self.groups[entry.key] = self.accumulate(self.groups.get(entry.key, self.identity), entry.value)
+        return iter(())
 
     def complete(self):
         for key, value in self.groups.iteritems():
@@ -76,6 +74,7 @@ class CombineP(Processor):
     def process(self, inbox, ordinal=0):
         for entry in inbox:
             self.groups[entry.key] = self.combine(self.groups.get(entry.key, entry.value), entry.value)
+        return iter(())
 
     def complete(self):
         for key, value in self.groups.iteritems():

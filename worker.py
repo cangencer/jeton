@@ -1,16 +1,16 @@
 import struct
 import sys
+import cloudpickle
+import jeton
 
-from cloudpickle import loads
 from hazelcast.config import SerializationConfig
 from hazelcast.serialization.input import _ObjectDataInput
 from hazelcast.serialization.service import SerializationServiceV1, FMT_BE_INT
 
-from jeton import EntrySerializer, Entry
-from processor import MapP, TestP
+from jeton.processor import MapP, TestP, FlatMapP, FilterP, AccumulateP, CombineP
 
 config = SerializationConfig()
-config.set_custom_serializer(Entry, EntrySerializer)
+config.set_custom_serializer(jeton.Entry, jeton.EntrySerializer)
 service = SerializationServiceV1(config)
 
 
@@ -52,12 +52,14 @@ def main_loop():
                 sys.stderr.write("Writing packet of size %s\n" % len(output_packet))
                 sys.stdout.write(output_packet)
 
+
 def complete(p, output, limit=1024):
     output.set_position(0)
     output.write_int(0)  # length of packet placeholder
     output.write_int(0)  # num items placeholder
     count = 0
     for out_item in p.complete():
+        sys.stderr.write("type of out item: %s\n" % out_item.__class__)
         output.write_object(out_item)
         count = count + 1
         if count == limit:
@@ -83,6 +85,7 @@ def process_inbox(p, inbox, output, limit=1024):
     output.write_int(0)  # num items placeholder
     count = 0
     for out_item in p.process(inbox):
+        sys.stderr.write("type of out item: %s\n" % out_item.__class__)
         output.write_object(out_item)
         count = count + 1
         if count == limit:
@@ -105,11 +108,23 @@ def process_inbox(p, inbox, output, limit=1024):
 
 def create_processor(name, params):
     if name == "map":
-        return MapP(loads(params[0]))
+        return MapP(unpickle(params[0]))
+    elif name == "flat_map":
+        return FlatMapP(unpickle(params[0]))
+    elif name == "filter":
+        return FilterP(unpickle(params[0]))
+    elif name == "accumulate":
+        return AccumulateP(unpickle(params[0]), unpickle(params[1]))
+    elif name == "combine":
+        return CombineP(unpickle(params[0]))
     elif name == "test":
         return TestP()
     else:
         raise "Unknown processor type"
+
+
+def unpickle(param):
+    return cloudpickle.loads(str(bytearray(param)))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from cloudpickle import dumps
+import cloudpickle
 
 
 class Pipe:
@@ -42,4 +42,4 @@ class Pipe:
 
     @staticmethod
     def _dumps(o):
-        return bytearray(dumps(o))
+        return bytearray(cloudpickle.dumps(o))
