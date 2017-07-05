@@ -1,5 +1,6 @@
 from cloudpickle import dumps
 
+
 class Pipe:
     def __init__(self, jeton):
         self.jeton = jeton

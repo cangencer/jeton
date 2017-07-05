@@ -4,7 +4,10 @@ import select
 from hazelcast.serialization.service import SerializationServiceV1
 from hazelcast.config import SerializationConfig, INTEGER_TYPE
 
+from jeton import EntrySerializer, Entry
+
 config = SerializationConfig()
+config.set_custom_serializer(Entry, EntrySerializer)
 service = SerializationServiceV1(config)
 
 rlist = [sys.stdin]

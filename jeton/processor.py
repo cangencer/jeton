@@ -1,3 +1,6 @@
+from jeton import Entry
+
+
 class Processor(object):
     def process(self, inbox, ordinal=0):
         yield
@@ -44,23 +47,28 @@ class AccumulateP(Processor):
         self.accumulate = accumulate
         self.identity = identity
         self.groups = {}
-        self.complete = self.groups.iteritems
 
     def process(self, inbox, ordinal=0):
-        for key, value in inbox:
-            self.groups[key] = self.accumulate(self.groups.get(key, self.identity), value)
+        for entry in inbox:
+            self.groups[entry.key] = self.accumulate(self.groups.get(entry.key, self.identity), entry.value)
+
+    def complete(self):
+        for key, value in self.groups.iteritems():
+            yield Entry(key, value)
 
 
 class CombineP(Processor):
     def __init__(self, combine):
         self.combine = combine
         self.groups = {}
-        self.complete = self.groups.iteritems
 
     def process(self, inbox, ordinal=0):
-        for key, value in inbox:
-            self.groups[key] = self.combine(self.groups.get(key, value), value)
+        for entry in inbox:
+            self.groups[entry.key] = self.combine(self.groups.get(entry.key, entry.value), entry.value)
 
+    def complete(self):
+        for key, value in self.groups.iteritems():
+            yield Entry(key, value)
 
 if __name__ == "__main__":
     print("mapP")
@@ -80,10 +88,10 @@ if __name__ == "__main__":
 
     print("accumulateP")
     acc1 = AccumulateP(0, lambda a, n: a + 1)
-    acc1.process([("a", 1), ("b", 1), ("c", 1), ("a", 1)])
+    acc1.process([Entry("a", 1), Entry("b", 1), Entry("c", 1), Entry("a", 1)])
 
     acc2 = AccumulateP(0, lambda a, n: a + 1)
-    acc2.process([("a", 1), ("b", 1), ("c", 1), ("a", 1)])
+    acc2.process([Entry("a", 1), Entry("b", 1), Entry("c", 1), Entry("a", 1)])
 
     print("combineP")
     comb1 = CombineP(lambda l, r: l + r)
