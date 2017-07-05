@@ -1,4 +1,5 @@
 import sys
+from itertools import count, islice
 
 from jeton import Entry
 
@@ -20,7 +21,7 @@ class TestP(Processor):
             yield item
 
     def complete(self):
-        return xrange(0, 2000)
+        return islice(count(), 2000)
 
 class MapP(Processor):
     def __init__(self, map_function):
@@ -60,7 +61,6 @@ class AccumulateP(Processor):
 
     def process(self, inbox, ordinal=0):
         for entry in inbox:
-            sys.stderr.write("AccumulateP: %s\n" % entry)
             self.groups[entry.key] = self.accumulate(self.groups.get(entry.key, self.identity), entry.value)
         return iter(())
 
