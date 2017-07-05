@@ -15,22 +15,18 @@ service = SerializationServiceV1(config)
 
 
 def read_packet():
-    sys.stderr.write("Reading packet\n")
     len_bytes = sys.stdin.read(4)
     length = struct.unpack_from(FMT_BE_INT, len_bytes)[0]
-    sys.stderr.write("Reading packet length %d \n" % length)
     buff = sys.stdin.read(length)
     sys.stderr.write("Read packet length %d \n" % length)
     return _ObjectDataInput(buff, 0, service)
 
 
 def main_loop():
-    sys.stderr.write("Reading initial transform\n")
     init_input = read_packet()
     name = init_input.read_utf()
     sys.stderr.write("Read transform: " + name + "\n")
     params = init_input.read_object()
-    sys.stderr.write("Read params: %s\n" % params)
     output = service._create_data_output()
     p = create_processor(name, params)
     for output_packet in process_inbox(p, [], output):
@@ -41,7 +37,6 @@ def main_loop():
         inbox_input = read_packet()
         # deserialize inbox
         inbox = inbox_input.read_object()
-        sys.stderr.write("Read inbox %s\n" % inbox)
         if inbox:
             for output_packet in process_inbox(p, inbox, output):
                 sys.stderr.write("Writing packet of size %s\n" % len(output_packet))
@@ -59,7 +54,6 @@ def complete(p, output, limit=1024):
     output.write_int(0)  # num items placeholder
     count = 0
     for out_item in p.complete():
-        sys.stderr.write("type of out item: %s\n" % out_item.__class__)
         output.write_object(out_item)
         count = count + 1
         if count == limit:
@@ -85,11 +79,10 @@ def process_inbox(p, inbox, output, limit=1024):
     output.write_int(0)  # num items placeholder
     count = 0
     for out_item in p.process(inbox):
-        sys.stderr.write("type of out item: %s\n" % out_item.__class__)
         output.write_object(out_item)
         count = count + 1
         if count == limit:
-            output.write_int(output.position(), 0)
+            output.write_int(output.position() - 4, 0)
             output.write_int(count, 4)
             count = 0
             output_packet = output.to_byte_array()

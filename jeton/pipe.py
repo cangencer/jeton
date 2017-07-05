@@ -19,6 +19,10 @@ class Pipe:
         self._add_transform(u"filter", self._dumps(predicate))
         return self
 
+    def read_files(self, path):
+        self._add_transform(u"read_files", path)
+        return self
+
     def read_map(self, name):
         self._add_transform(u"read_map", name)
         return self
