@@ -13,6 +13,9 @@ class Jeton:
     def get_map(self, name):
         return self.jet.getMap(name)
 
+    def get_list(self, name):
+        return self.jet.getList(name)
+
     def new_pipe(self):
         return Pipe(self)
 

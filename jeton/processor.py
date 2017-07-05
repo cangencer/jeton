@@ -1,3 +1,5 @@
+import sys
+
 from jeton import Entry
 
 
@@ -58,6 +60,7 @@ class AccumulateP(Processor):
 
     def process(self, inbox, ordinal=0):
         for entry in inbox:
+            sys.stderr.write("AccumulateP: %s\n" % entry)
             self.groups[entry.key] = self.accumulate(self.groups.get(entry.key, self.identity), entry.value)
         return iter(())
 
@@ -73,7 +76,11 @@ class CombineP(Processor):
 
     def process(self, inbox, ordinal=0):
         for entry in inbox:
-            self.groups[entry.key] = self.combine(self.groups.get(entry.key, entry.value), entry.value)
+            prev = self.groups.get(entry.key)
+            if prev:
+                self.groups[entry.key] = self.combine(prev, entry.value)
+            else:
+                self.groups[entry.key] = entry.value
         return iter(())
 
     def complete(self):

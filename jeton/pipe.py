@@ -23,12 +23,20 @@ class Pipe:
         self._add_transform(u"read_files", path)
         return self
 
+    def read_list(self, name):
+        self._add_transform(u"read_list", name)
+        return self
+
     def read_map(self, name):
         self._add_transform(u"read_map", name)
         return self
 
     def write_map(self, name):
         self._add_transform(u"write_map", name)
+        return self
+
+    def write_list(self, name):
+        self._add_transform(u"write_list", name)
         return self
 
     def reduce(self, identity, accumulate, combine):

@@ -18,19 +18,19 @@ def read_packet():
     len_bytes = sys.stdin.read(4)
     length = struct.unpack_from(FMT_BE_INT, len_bytes)[0]
     buff = sys.stdin.read(length)
-    sys.stderr.write("Read packet length %d \n" % length)
+    # sys.stderr.write("Read packet length %d \n" % length)
     return _ObjectDataInput(buff, 0, service)
 
 
 def main_loop():
     init_input = read_packet()
     name = init_input.read_utf()
-    sys.stderr.write("Read transform: " + name + "\n")
     params = init_input.read_object()
     output = service._create_data_output()
     p = create_processor(name, params)
+    sys.stderr.write("Init processor %s\n" % p.__class__)
     for output_packet in process_inbox(p, [], output):
-        sys.stderr.write("Writing packet of size %s\n" % len(output_packet))
+        # sys.stderr.write("Writing packet of size %s\n" % len(output_packet))
         sys.stdout.write(output_packet)
 
     while True:
@@ -39,12 +39,12 @@ def main_loop():
         inbox = inbox_input.read_object()
         if inbox:
             for output_packet in process_inbox(p, inbox, output):
-                sys.stderr.write("Writing packet of size %s\n" % len(output_packet))
+                # sys.stderr.write("Writing packet of size %s\n" % len(output_packet))
                 sys.stdout.write(output_packet)
         else:
-            sys.stderr.write("Start complete\n")
+            sys.stderr.write("Complete processor %s\n" % p.__class__)
             for output_packet in complete(p, output):
-                sys.stderr.write("Writing packet of size %s\n" % len(output_packet))
+                # sys.stderr.write("Writing packet of size %s\n" % len(output_packet))
                 sys.stdout.write(output_packet)
 
 
