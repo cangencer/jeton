@@ -15,8 +15,9 @@ def main_loop():
     while True:
         ready = select.select(rlist, [], [])[0]
         for f in ready:
-            bytes = f.read()
+            bytes = f.read(1)
             sys.stderr.write("Read %d bytes\n" % (len(bytes)))
+
 
 if __name__ == "__main__":
     main_loop()
