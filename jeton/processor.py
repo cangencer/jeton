@@ -1,5 +1,4 @@
 class Processor(object):
-
     def process(self, inbox, ordinal=0):
         yield
 
@@ -7,7 +6,7 @@ class Processor(object):
         yield
 
 
-class MapProcessor(Processor):
+class MapP(Processor):
     def __init__(self, map_function):
         self.map_function = map_function
 
@@ -19,7 +18,7 @@ class MapProcessor(Processor):
         yield
 
 
-class FlatMapProcessor(Processor):
+class FlatMapP(Processor):
     def __init__(self, flat_map_function):
         self.flat_map_function = flat_map_function
 
@@ -30,7 +29,7 @@ class FlatMapProcessor(Processor):
                 yield mapped
 
 
-class FilterProcessor(Processor):
+class FilterP(Processor):
     def __init__(self, predicate):
         self.predicate = predicate
 
@@ -39,3 +38,57 @@ class FilterProcessor(Processor):
             if self.predicate(item):
                 yield item
 
+
+class AccumulateP(Processor):
+    def __init__(self, identity, accumulate):
+        self.accumulate = accumulate
+        self.identity = identity
+        self.groups = {}
+        self.complete = self.groups.iteritems
+
+    def process(self, inbox, ordinal=0):
+        for key, value in inbox:
+            self.groups[key] = self.accumulate(self.groups.get(key, self.identity), value)
+
+
+class CombineP(Processor):
+    def __init__(self, combine):
+        self.combine = combine
+        self.groups = {}
+        self.complete = self.groups.iteritems
+
+    def process(self, inbox, ordinal=0):
+        for key, value in inbox:
+            self.groups[key] = self.combine(self.groups.get(key, value), value)
+
+
+if __name__ == "__main__":
+    print("mapP")
+    map = MapP(lambda e: e * e)
+    for item in map.process(xrange(0,5)):
+        print item
+
+    print("flatMapP")
+    flatMap = FlatMapP(lambda e: e.split())
+    for item in flatMap.process("0 1 2 3 4 5 6"):
+        print item
+
+    print("filterP")
+    filterP = FilterP(lambda e: e.strip())
+    for item in filterP.process(["", " ", "  ", "a", "b"]):
+        print item
+
+    print("accumulateP")
+    acc1 = AccumulateP(0, lambda a, n: a + 1)
+    acc1.process([("a", 1), ("b", 1), ("c", 1), ("a", 1)])
+
+    acc2 = AccumulateP(0, lambda a, n: a + 1)
+    acc2.process([("a", 1), ("b", 1), ("c", 1), ("a", 1)])
+
+    print("combineP")
+    comb1 = CombineP(lambda l, r: l + r)
+    comb1.process(acc1.complete())
+    comb1.process(acc2.complete())
+
+    for item in comb1.complete():
+        print item

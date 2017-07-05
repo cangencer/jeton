@@ -26,8 +26,8 @@ class Pipe:
         self._add_transform(u"write_map", name)
         return self
 
-    def reduce(self, accumulate, combine):
-        self._add_transform(u"reduce", self._dumps(accumulate), self._dumps(combine))
+    def reduce(self, identity, accumulate, combine):
+        self._add_transform(u"reduce", self._dumps(identity), self._dumps(accumulate), self._dumps(combine))
         return self
 
     def execute(self):

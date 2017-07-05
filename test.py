@@ -11,7 +11,7 @@ pipe\
     .read_map("words")\
     .flat_map(lambda e: e.value().split())\
     .map(lambda n: (n, 1))\
-    .reduce(lambda a, n: a + 1, lambda l, r: l + r)\
+    .reduce(0, lambda a, n: a + 1, lambda l, r: l + r)\
     .write_map("counts")\
     .execute()
 
