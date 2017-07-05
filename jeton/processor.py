@@ -9,6 +9,17 @@ class Processor(object):
         yield
 
 
+class TestP(Processor):
+    def __init__(self):
+        pass
+
+    def process(self, inbox, ordinal=0):
+        for item in inbox:
+            yield item
+
+    def complete(self):
+        return xrange(0, 2000)
+
 class MapP(Processor):
     def __init__(self, map_function):
         self.map_function = map_function
